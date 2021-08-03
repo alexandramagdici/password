@@ -1,91 +1,65 @@
-import React, { Component } from "react";
-import LOperatori from "./operatori";
-import CorpTabel from "./corptabel";
-import Formular from "./formular";
+import React from 'react';
+import { useState } from 'react';
+import httpClient from '../src/httpClient';
 import "./App.css";
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      operatori: LOperatori,
-      opedit: { id: 0, nume: "", numePrenume: "", email: "", locatie: "" },
-      cheie: 0
-    };
 
-    this.stergOper = this.stergOper.bind(this);
-    this.corectezOper = this.corectezOper.bind(this);
-    this.formSubmit = this.formSubmit.bind(this);
+function App() {
+  const [userInfo, setUserInfo] = useState({
+    otp: '',
+    userId:'',
+    remainingTime: 0});
+
+    const handleUserId = e => {
+      e.preventDefault();
+      setUserInfo({ ...userInfo, ['userId']: e.target.value });
   }
 
-  //  In tabel s-a selectat stergere
-  stergOper(ev) {
-    const { operatori } = this.state;
-    const sirNou = operatori.filter(item => {
-      return parseInt(item.id) !== parseInt(ev.target.id);
-      //  Obiectul care are id === idSup nu se copiaza in noul sir
-    });
-    this.setState({
-      operatori: sirNou,
-      opedit: { id: 0, nume: "", numePrenume: "", email: "", locatie: "" },
-      cheie: 0
-    });
-  }
+    // Timer 
+    const [counter, setCounter] = React.useState(0);
+    React.useEffect(() => {
+        const timer =
+        counter > 0 && setInterval(() => setCounter(counter - 1), 1000);
+        if (counter == 0) setUserInfo({ ...userInfo, ['otp']: '' });
+        return () => clearInterval(timer);
+    }, [counter]);
 
-  //  In tabel s-a selectat editare
-  corectezOper(ev) {
-    //  Caut operatorul in lista operatorilor
-    const idOper = parseInt(ev.target.id);
-    const lOperatori = this.state.operatori;
-    const oper = lOperatori.find(item => {
-      return parseInt(item.id) === idOper;
-    });
-    this.setState({
-      operatori: lOperatori,
-      opedit: oper,
-      cheie: idOper //  Important!!! Provoaca reconstruirea componentei "Formular"
-    });
-  }
+    const getOtp = () =>
+     { 
 
-  //  In formular s-a selectat submit
-  formSubmit(oper) {
-    //  . . .
-  }
+      setUserInfo({ ...userInfo, ['otp']: '124556' }); setCounter(30); 
 
-  render() {
-    //  in Formular folosesc this.props.edit (contact de editat)
-    return (
-      <div className="container">
-        <h2 className="text-center mt-5 mb-3">
-          Lista operatorilor aplicației <em>ALEGERI</em>
-        </h2>
-        <table className="table">
-          <thead className="thead-light">
-            <tr>
-              <th scope="col">Nume login</th>
-              <th scope="col">Nume și prenume</th>
-              <th scope="col">Email</th>
-              <th scope="col">Locație</th>
-              <th scope="col">Operații</th>
-            </tr>
-          </thead>
-          <tbody key="324365">
-            <CorpTabel
-              operatori={this.state.operatori}
-              stergOper={this.stergOper}
-              corectezOper={this.corectezOper}
-            />
-          </tbody>
-        </table>
-        <hr></hr>
-        <Formular
-          key={this.state.cheie}
-          oper={this.state.opedit}
-          formSubmit={this.formSubmit}
-        />
-      </div>
-    );
-  }
+      /*const request = {userId: userInfo.userId, GenerationDate:Date().toLocaleString()}
+
+      httpClient.post(`/Account/GenerateOtp`, request)
+        .then(result => { if (result.errorMessage.length==0 )
+        setUserInfo({ ...userInfo, ['otp']: result.password, ['remainingTime']: result.remainingseconds});}) */
+    }
+
+    
+  return (
+    userInfo['otp'] ==''?
+    <div className="App">
+     <div class="login" className="login"> 
+                <h1>First login</h1>
+                <input class="input-user" type="text" onChange={handleUserId} name="username"/>
+                <button class="btn btn-warning" onClick={getOtp}>Get password 
+                </button>
+            </div>
+    </div>:<div className="App">
+              <div class="login" className="login"> 
+                  <h1>Enter OTP</h1>
+                  <div>
+                    <input  class="input-otp" type="text" name="otp" maxlength="6" value={userInfo.otp} />
+                  </div>
+                  <button class="btn btn-warning">Verify</button>
+              </div>
+              <div>
+                <p>Time left:{counter}</p>
+              </div>
+            </div>
+
+  );
 }
 
 export default App;
